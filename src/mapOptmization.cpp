@@ -245,17 +245,31 @@ public:
 
             updateInitialGuess();
 
+            // printf("cloudKeyPoses3D->size(): %d\n", cloudKeyPoses3D->size());
+
             extractSurroundingKeyFrames();
+
+            // printf("cloudKeyPoses3D->size(): %d\n", cloudKeyPoses3D->size());
 
             downsampleCurrentScan();
 
+            // printf("cloudKeyPoses3D->size(): %d\n", cloudKeyPoses3D->size());
+
             scan2MapOptimization();
+
+            // printf("cloudKeyPoses3D->size(): %d. loopIndexQueue.size(): %d\n", cloudKeyPoses3D->size(), loopIndexQueue.size());
 
             saveKeyFramesAndFactor();
 
+            // printf("cloudKeyPoses3D->size(): %d\n", cloudKeyPoses3D->size());
+
             correctPoses();
 
+            // printf("cloudKeyPoses3D->size(): %d\n", cloudKeyPoses3D->size());
+
             publishOdometry();
+
+            // printf("cloudKeyPoses3D->size(): %d\n", cloudKeyPoses3D->size());
 
             publishFrames();
         }
@@ -733,6 +747,10 @@ public:
 
     void updateInitialGuess()
     {
+        printf("cloudKeyPoses3D->points.empty(): %s\n", cloudKeyPoses3D->points.empty()? "true" : "false");
+        printf("cloudInfo.odomAvailable: %s\n", cloudInfo.odomAvailable? "true" : "false");
+        printf("cloudInfo.imuAvailable: %s\n\n", cloudInfo.imuAvailable? "true" : "false");
+        
         // save current transformation before any processing
         incrementalOdometryAffineFront = trans2Affine3f(transformTobeMapped);
 
@@ -747,7 +765,9 @@ public:
             if (!useImuHeadingInitialization)
                 transformTobeMapped[2] = 0;
 
-            lastImuTransformation = pcl::getTransformation(0, 0, 0, cloudInfo.imuRollInit, cloudInfo.imuPitchInit, cloudInfo.imuYawInit); // save imu before return;
+            lastImuTransformation = pcl::getTransformation(0, 0, 0, cloudInfo.imuRollInit,
+                                                                    cloudInfo.imuPitchInit,
+                                                                    cloudInfo.imuYawInit); // save imu before return;
             return;
         }
 
@@ -771,7 +791,9 @@ public:
 
                 lastImuPreTransformation = transBack;
 
-                lastImuTransformation = pcl::getTransformation(0, 0, 0, cloudInfo.imuRollInit, cloudInfo.imuPitchInit, cloudInfo.imuYawInit); // save imu before return;
+                lastImuTransformation = pcl::getTransformation(0, 0, 0, cloudInfo.imuRollInit,
+                                                                        cloudInfo.imuPitchInit,
+                                                                        cloudInfo.imuYawInit); // save imu before return;
                 return;
             }
         }
@@ -787,7 +809,9 @@ public:
             pcl::getTranslationAndEulerAngles(transFinal, transformTobeMapped[3], transformTobeMapped[4], transformTobeMapped[5], 
                                                           transformTobeMapped[0], transformTobeMapped[1], transformTobeMapped[2]);
 
-            lastImuTransformation = pcl::getTransformation(0, 0, 0, cloudInfo.imuRollInit, cloudInfo.imuPitchInit, cloudInfo.imuYawInit); // save imu before return;
+            lastImuTransformation = pcl::getTransformation(0, 0, 0, cloudInfo.imuRollInit,
+                                                                    cloudInfo.imuPitchInit,
+                                                                    cloudInfo.imuYawInit); // save imu before return;
             return;
         }
     }
@@ -814,6 +838,9 @@ public:
         std::vector<int> pointSearchInd;
         std::vector<float> pointSearchSqDis;
 
+        static int call_count = 0;
+        call_count++;
+        printf("call_count: %d. cloudKeyPoses3D.size(): %d\n", call_count, cloudKeyPoses3D->size());
         // extract all the nearby key poses and downsample them
         kdtreeSurroundingKeyPoses->setInputCloud(cloudKeyPoses3D); // create kd-tree
         kdtreeSurroundingKeyPoses->radiusSearch(cloudKeyPoses3D->back(), (double)surroundingKeyframeSearchRadius, pointSearchInd, pointSearchSqDis);
@@ -1449,6 +1476,7 @@ public:
         // gtSAMgraph.print("GTSAM Graph:\n");
 
         // update iSAM
+        printf("gtSAMgraph.size(): %d\n", gtSAMgraph.size());
         isam->update(gtSAMgraph, initialEstimate);
         isam->update();
 

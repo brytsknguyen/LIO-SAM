@@ -1,6 +1,7 @@
 #include "utility.h"
 #include "lio_sam/cloud_info.h"
 
+#ifdef VP16
 // Velodyne
 struct PointXYZIRT
 {
@@ -15,24 +16,26 @@ POINT_CLOUD_REGISTER_POINT_STRUCT (PointXYZIRT,
     (float, x, x) (float, y, y) (float, z, z) (float, intensity, intensity)
     (uint16_t, ring, ring) (float, time, time)
 )
-
+#elif OS128
 // Ouster
-// struct PointXYZIRT {
-//     PCL_ADD_POINT4D;
-//     float intensity;
-//     uint32_t t;
-//     uint16_t reflectivity;
-//     uint8_t ring;
-//     uint16_t noise;
-//     uint32_t range;
-//     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-// }EIGEN_ALIGN16;
+struct PointXYZIRT {
+    PCL_ADD_POINT4D;
+    float intensity;
+    uint32_t t;
+    uint16_t reflectivity;
+    uint8_t ring;
+    uint16_t noise;
+    uint32_t range;
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+}EIGEN_ALIGN16;
 
-// POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZIRT,
-//     (float, x, x) (float, y, y) (float, z, z) (float, intensity, intensity)
-//     (uint32_t, t, t) (uint16_t, reflectivity, reflectivity)
-//     (uint8_t, ring, ring) (uint16_t, noise, noise) (uint32_t, range, range)
-// )
+POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZIRT,
+    (float, x, x) (float, y, y) (float, z, z) (float, intensity, intensity)
+    (uint32_t, t, t) (uint16_t, reflectivity, reflectivity)
+    (uint8_t, ring, ring) (uint16_t, noise, noise) (uint32_t, range, range)
+)
+#endif
+
 
 const int queueLength = 2000;
 
@@ -174,10 +177,10 @@ public:
 
     void cloudHandler(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
     {
-        if (!cachePointCloud(laserCloudMsg))
+        if (!cachePointCloud(laserCloudMsg)) // Cache the latest cloud (pointcloud(k)) and process pointcloud(k-2)
             return;
 
-        if (!deskewInfo())
+        if (!deskewInfo()) // Calculate the transformation from timeScanCur to timeScanEnd of the cached pointcloud
             return;
 
         projectPointCloud();
@@ -191,6 +194,7 @@ public:
 
     bool cachePointCloud(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
     {
+        cout << "laserCloudIn datasize: " << laserCloudMsg->data.size() << endl;
         // cache point cloud
         cloudQueue.push_back(*laserCloudMsg);
         if (cloudQueue.size() <= 2)
@@ -204,9 +208,14 @@ public:
         // get timestamp
         cloudHeader = currentCloudMsg.header;
         timeScanCur = cloudHeader.stamp.toSec();
+#ifdef VP16
         timeScanEnd = timeScanCur + laserCloudIn->points.back().time; // Velodyne
-        // timeScanEnd = timeScanCur + (float)laserCloudIn->points.back().t / 1000000000.0; // Ouster
-
+        printf("laserCloudIn->points.back().t: %d. dtimeScan: %f\n", laserCloudIn->points.back().time, timeScanEnd - timeScanCur);
+#elif  OS128
+        timeScanEnd = timeScanCur + (float)laserCloudIn->points.back().t / 1.0e9; // Ouster
+        printf("laserCloudIn->points.back().t: %d. dtimeScan: %f\n", laserCloudIn->points.back().t, timeScanEnd - timeScanCur);
+#endif
+        // printf("timeScanCur: %f. timeScanEnd: %f. dt: %f\n", timeScanCur, timeScanEnd, timeScanEnd - timeScanCur);
         // check dense flag
         if (laserCloudIn->is_dense == false)
         {
@@ -261,9 +270,12 @@ public:
         // make sure IMU data available for the scan
         if (imuQueue.empty() || imuQueue.front().header.stamp.toSec() > timeScanCur || imuQueue.back().header.stamp.toSec() < timeScanEnd)
         {
-            ROS_DEBUG("Waiting for IMU data ...");
+            printf("Waiting for IMU data ...\n");
             return false;
         }
+
+        // Since this point cloud is two messages behind the current pointcloud,
+        // enough IMU and odom data past timeScanEnd should have been buffered
 
         imuDeskewInfo();
 
@@ -459,15 +471,20 @@ public:
     PointType deskewPoint(PointType *point, double relTime)
     {
         if (deskewFlag == -1 || cloudInfo.imuAvailable == false)
+        {
             return *point;
+            printf("deskew return\n");
+        }
 
         double pointTime = timeScanCur + relTime;
 
         float rotXCur, rotYCur, rotZCur;
         findRotation(pointTime, &rotXCur, &rotYCur, &rotZCur);
+        // printf("rotCur: %f, %f, %f. pointTime: %f\n", rotXCur, rotYCur, rotZCur, pointTime);
 
         float posXCur, posYCur, posZCur;
         findPosition(relTime, &posXCur, &posYCur, &posZCur);
+        // printf("posCur: %f, %f, %f. pointTime: %f\n", posXCur, posYCur, posZCur, pointTime);
 
         if (firstPointFlag == true)
         {
@@ -491,6 +508,9 @@ public:
     void projectPointCloud()
     {
         int cloudSize = laserCloudIn->points.size();
+        int total_deskews = 0;
+        int range_short   = 0;
+        int rowOOB = 0, colOOB = 0, occupied = 0;
         // range image projection
         for (int i = 0; i < cloudSize; ++i)
         {
@@ -501,11 +521,24 @@ public:
             thisPoint.intensity = laserCloudIn->points[i].intensity;
 
             int rowIdn = laserCloudIn->points[i].ring;
+            // printf("rowIdn: %d\n", rowIdn);
+
+
             if (rowIdn < 0 || rowIdn >= N_SCAN)
+            {
+                // printf("row out of bound: %d. Dist: %f.\n", rowIdn, pointDistance(thisPoint));
+
+                rowOOB++;
                 continue;
+            }
+
+            // printf("row: %d. Dist: %f. point time: %.12f\n", rowIdn, pointDistance(thisPoint), (double)laserCloudIn->points[i].t / 1.0e9);
 
             if (rowIdn % downsampleRate != 0)
+            {
+                // printf("rowIdn downsample: %d\n", rowIdn);
                 continue;
+            }
 
             float horizonAngle = atan2(thisPoint.x, thisPoint.y) * 180 / M_PI;
 
@@ -515,29 +548,53 @@ public:
                 columnIdn -= Horizon_SCAN;
 
             if (columnIdn < 0 || columnIdn >= Horizon_SCAN)
+            {
+                printf("column out of bound: %d\n", columnIdn);
+                colOOB++;
                 continue;
+            }
 
             float range = pointDistance(thisPoint);
             
             if (range < 1.0)
+            {
+                range_short++;
+                // printf("range below 1.0: %f\n", range);
                 continue;
+            }
 
             if (rangeMat.at<float>(rowIdn, columnIdn) != FLT_MAX)
+            {
+                // printf("FLT_MAX range: %d, %d\n", rowIdn, columnIdn);
+                occupied++;
                 continue;
+            }
 
+            total_deskews++;
+
+#ifdef VP16
             thisPoint = deskewPoint(&thisPoint, laserCloudIn->points[i].time); // Velodyne
-            // thisPoint = deskewPoint(&thisPoint, (float)laserCloudIn->points[i].t / 1000000000.0); // Ouster
-
+#elif  OS128
+            thisPoint = deskewPoint(&thisPoint, (float)laserCloudIn->points[i].t / 1.0e9); // Ouster
+#endif
             rangeMat.at<float>(rowIdn, columnIdn) = pointDistance(thisPoint);
+
+            // if (rangeMat.at<float>(rowIdn,columnIdn) != FLT_MAX)
+            //     printf("FLT_MAX: %d, %d\n", rowIdn, columnIdn);
 
             int index = columnIdn + rowIdn * Horizon_SCAN;
             fullCloud->points[index] = thisPoint;
         }
+
+        printf("fullCloud size: %d. rangeMat size: %d. cloudSize: %d. deskews: %d. range_short: %d. rowOOB: %d. colOOB: %d. occupied %d.\n",
+               fullCloud->points.size(), rangeMat.rows*rangeMat.cols, laserCloudIn->points.size(), total_deskews,
+               range_short, rowOOB, colOOB, occupied);
     }
 
     void cloudExtraction()
     {
         int count = 0;
+        int rejected_count = 0;
         // extract segmented cloud for lidar odometry
         for (int i = 0; i < N_SCAN; ++i)
         {
@@ -556,9 +613,16 @@ public:
                     // size of extracted cloud
                     ++count;
                 }
+                else
+                {
+                    rejected_count++;
+                }
+                
             }
             cloudInfo.endRingIndex[i] = count -1 - 5;
         }
+
+        printf("extractedCloud size: %d. count: %d. rejected: %d\n", extractedCloud->points.size(), count, rejected_count);
     }
     
     void publishClouds()
@@ -577,7 +641,7 @@ int main(int argc, char** argv)
     
     ROS_INFO("\033[1;32m----> Image Projection Started.\033[0m");
 
-    ros::MultiThreadedSpinner spinner(3);
+    ros::MultiThreadedSpinner spinner(0);
     spinner.spin();
     
     return 0;

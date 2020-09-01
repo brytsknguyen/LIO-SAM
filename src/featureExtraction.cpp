@@ -69,6 +69,8 @@ public:
         cloudHeader = msgIn->header; // new cloud header
         pcl::fromROSMsg(msgIn->cloud_deskewed, *extractedCloud); // new cloud for extraction
 
+        printf("cloud size: %d\n", extractedCloud->size());
+
         calculateSmoothness();
 
         markOccludedPoints();

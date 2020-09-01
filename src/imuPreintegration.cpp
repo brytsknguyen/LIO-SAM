@@ -377,9 +377,38 @@ public:
         graphValues.insert(X(key), propState_.pose());
         graphValues.insert(V(key), propState_.v());
         graphValues.insert(B(key), prevBias_);
+          
         // optimize
         optimizer.update(graphFactors, graphValues);
+
+        // if(systemInitialized)
+        // {
+        //     printf("Before opt: graphFactors.size(): %d. key: %d. lastImuT_opt: %f \n", graphFactors.size(), key, lastImuT_opt);
+        //     // printf("b4opt:\nX_1: %f, %f, %f \n", graphValues.at<gtsam::Pose3>(X(key-1)).x(),
+        //     //                                        graphValues.at<gtsam::Pose3>(X(key-1)).y(),
+        //     //                                        graphValues.at<gtsam::Pose3>(X(key-1)).z());
+        //     printf("X_2: %f, %f, %f \n", graphValues.at<gtsam::Pose3>(X(key)).x(),
+        //                                  graphValues.at<gtsam::Pose3>(X(key)).y(),
+        //                                  graphValues.at<gtsam::Pose3>(X(key)).z());
+        //     if(key >= 3)
+        //     {
+        //         optimizer.calculateEstimate<gtsam::imuBias::ConstantBias>(B(key-3)).print();
+        //     }
+        //     if(key >= 2)
+        //     {
+        //         optimizer.calculateEstimate<gtsam::imuBias::ConstantBias>(B(key-2)).print();
+        //     }
+        //     optimizer.calculateEstimate<gtsam::imuBias::ConstantBias>(B(key-1)).print();
+        //     if(optimizer.valueExists(B(key)))
+        //     {
+        //         optimizer.calculateEstimate<gtsam::imuBias::ConstantBias>(B(key)).print();
+        //     }
+        // }
+        
+        ros::WallTime startTime = ros::WallTime::now();
         optimizer.update();
+        // printf("update time: %f\n", (ros::WallTime::now() - startTime).toSec());
+
         graphFactors.resize(0);
         graphValues.clear();
         // Overwrite the beginning of the preintegration for the next step.
@@ -388,6 +417,25 @@ public:
         prevVel_   = result.at<gtsam::Vector3>(V(key));
         prevState_ = gtsam::NavState(prevPose_, prevVel_);
         prevBias_  = result.at<gtsam::imuBias::ConstantBias>(B(key));
+
+        // printf("\nAfter  opt: graphFactors.size(): %d. key: %d. lastImuT_opt: %f \n", graphFactors.size(), key, lastImuT_opt);
+        // printf("X_1: %f, %f, %f \n", result.at<gtsam::Pose3>(X(key-1)).x(),
+        //                              result.at<gtsam::Pose3>(X(key-1)).y(),
+        //                              result.at<gtsam::Pose3>(X(key-1)).z());
+        // printf("X_2: %f, %f, %f \n", result.at<gtsam::Pose3>(X(key)).x(),
+        //                              result.at<gtsam::Pose3>(X(key)).y(),
+        //                              result.at<gtsam::Pose3>(X(key)).z());
+        // if(key >= 3)
+        // {
+        //     optimizer.calculateEstimate<gtsam::imuBias::ConstantBias>(B(key-3)).print();
+        // }
+        // if(key >= 2)
+        // {
+        //     optimizer.calculateEstimate<gtsam::imuBias::ConstantBias>(B(key-2)).print();
+        // }
+        // optimizer.calculateEstimate<gtsam::imuBias::ConstantBias>(B(key-1)).print();
+        // optimizer.calculateEstimate<gtsam::imuBias::ConstantBias>(B(key)).print();
+
         // Reset the optimization preintegration object.
         imuIntegratorOpt_->resetIntegrationAndSetBias(prevBias_);
         // check optimization
@@ -512,7 +560,7 @@ int main(int argc, char** argv)
 
     ROS_INFO("\033[1;32m----> IMU Preintegration Started.\033[0m");
     
-    ros::MultiThreadedSpinner spinner(4);
+    ros::MultiThreadedSpinner spinner(0);
     spinner.spin();
     
     return 0;

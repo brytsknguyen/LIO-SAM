@@ -1,20 +1,37 @@
 <launch>
 
-    <arg name="project" default="lio_sam"/>
+    <arg name="project"       default="lio_sam"/>
+    <arg name="publish_clock" default="--clock"/>
+
     
     <!-- Parameters -->
-    <rosparam file="$(find lio_sam)/config/params.yaml" command="load" />
+    <!-- <rosparam file="$(find lio_sam)/config/params.yaml" command="load" /> -->
+    <!-- <rosparam file="$(find lio_sam)/config/params_ouster128.yaml" command="load" /> -->
+    <rosparam file="$(find lio_sam)/config/params_bca.yaml" command="load" />
 
     <!--- LOAM -->
     <include file="$(find lio_sam)/launch/include/module_loam.launch" />
 
     <!--- Robot State TF -->
-    <include file="$(find lio_sam)/launch/include/module_robot_state_publisher.launch" />
+    <!-- <include file="$(f9ind lio_sam)/launch/include/module_robot_state_publisher.launch" /> -->
 
     <!--- Run Navsat -->
-    <include file="$(find lio_sam)/launch/include/module_navsat.launch" />
+    <!-- <include file="$(find lio_sam)/launch/include/module_navsat.launch" /> -->
 
     <!--- Run Rviz-->
     <include file="$(find lio_sam)/launch/include/module_rviz.launch" />
+
+    <!-- Play the bag file -->
+    <param name="/use_sim_time" value="true" />
+    <!-- <node required="true" pkg="rosbag" type="play" name="rosbag_play"
+          args="$(arg publish_clock) /home/tmn/DATASETS/LIOSAM/casual_walk.bag"/> -->
+    <!-- <node required="true" pkg="rosbag" type="play" name="rosbag_play"
+          args="$(arg publish_clock) /home/$(env USER)/DATASETS/LIOSAM/20200707_ouster.bag"/> -->
+    <node required="true" pkg="rosbag" type="play" name="rosbag_play"
+          args="$(arg publish_clock) /media/tmn/mySamsungSSD/bca_clementi_20200116/007_321_facade_complete/imu_uwb_cam_lidar_leica.bag"/>
+    <!-- <node required="true" pkg="rosbag" type="play" name="rosbag_play"
+          args="$(arg publish_clock) /media/tmn/mySamsungSSD/bca_clementi_20200116/005_323_near_school_later/imu_uwb_cam_lidar_leica.bag"/> -->
+
+    <node pkg="tf" type="static_transform_publisher" name="base2velodyne" args="0 0 0 0 0 0 base_link velodyne 10"/>
 
 </launch>

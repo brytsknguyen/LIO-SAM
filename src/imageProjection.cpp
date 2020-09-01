@@ -1,22 +1,6 @@
 #include "utility.h"
 #include "lio_sam/cloud_info.h"
 
-#ifdef VP16
-// Velodyne
-struct PointXYZIRT
-{
-    PCL_ADD_POINT4D
-    PCL_ADD_INTENSITY;
-    uint16_t ring;
-    float time;
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-} EIGEN_ALIGN16;
-
-POINT_CLOUD_REGISTER_POINT_STRUCT (PointXYZIRT,  
-    (float, x, x) (float, y, y) (float, z, z) (float, intensity, intensity)
-    (uint16_t, ring, ring) (float, time, time)
-)
-#elif OS128
 // Ouster
 struct PointXYZIRT {
     PCL_ADD_POINT4D;
@@ -34,8 +18,6 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(PointXYZIRT,
     (uint32_t, t, t) (uint16_t, reflectivity, reflectivity)
     (uint8_t, ring, ring) (uint16_t, noise, noise) (uint32_t, range, range)
 )
-#endif
-
 
 const int queueLength = 2000;
 
@@ -194,7 +176,6 @@ public:
 
     bool cachePointCloud(const sensor_msgs::PointCloud2ConstPtr& laserCloudMsg)
     {
-        cout << "laserCloudIn datasize: " << laserCloudMsg->data.size() << endl;
         // cache point cloud
         cloudQueue.push_back(*laserCloudMsg);
         if (cloudQueue.size() <= 2)
@@ -208,13 +189,9 @@ public:
         // get timestamp
         cloudHeader = currentCloudMsg.header;
         timeScanCur = cloudHeader.stamp.toSec();
-#ifdef VP16
-        timeScanEnd = timeScanCur + laserCloudIn->points.back().time; // Velodyne
-        printf("laserCloudIn->points.back().t: %d. dtimeScan: %f\n", laserCloudIn->points.back().time, timeScanEnd - timeScanCur);
-#elif  OS128
+
         timeScanEnd = timeScanCur + (float)laserCloudIn->points.back().t / 1.0e9; // Ouster
-        printf("laserCloudIn->points.back().t: %d. dtimeScan: %f\n", laserCloudIn->points.back().t, timeScanEnd - timeScanCur);
-#endif
+
         // printf("timeScanCur: %f. timeScanEnd: %f. dt: %f\n", timeScanCur, timeScanEnd, timeScanEnd - timeScanCur);
         // check dense flag
         if (laserCloudIn->is_dense == false)
@@ -511,18 +488,34 @@ public:
         int total_deskews = 0;
         int range_short   = 0;
         int rowOOB = 0, colOOB = 0, occupied = 0;
+
+        std::map<int, int> scan_checklist;
+
         // range image projection
         for (int i = 0; i < cloudSize; ++i)
         {
+
+            // printf("rowIdn: %d\n", rowIdn);
+
+            if ( int(laserCloudIn->points[i].ring + 1)%4 != 0)
+                continue;
+
+            int rowIdn = int((laserCloudIn->points[i].ring + 1)/4);
+
             PointType thisPoint;
             thisPoint.x = laserCloudIn->points[i].x;
             thisPoint.y = laserCloudIn->points[i].y;
             thisPoint.z = laserCloudIn->points[i].z;
             thisPoint.intensity = laserCloudIn->points[i].intensity;
 
-            int rowIdn = laserCloudIn->points[i].ring;
-            // printf("rowIdn: %d\n", rowIdn);
+            if (pointDistance(thisPoint) != 0)
+            {
+                auto iter = scan_checklist.find(rowIdn);
+                if (iter == scan_checklist.end())
+                    scan_checklist[rowIdn] = 0;
 
+                scan_checklist[rowIdn] += 1;
+            }
 
             if (rowIdn < 0 || rowIdn >= N_SCAN)
             {
@@ -586,9 +579,16 @@ public:
             fullCloud->points[index] = thisPoint;
         }
 
-        printf("fullCloud size: %d. rangeMat size: %d. cloudSize: %d. deskews: %d. range_short: %d. rowOOB: %d. colOOB: %d. occupied %d.\n",
-               fullCloud->points.size(), rangeMat.rows*rangeMat.cols, laserCloudIn->points.size(), total_deskews,
-               range_short, rowOOB, colOOB, occupied);
+        // printf("fullCloud size: %d. rangeMat size: %d. cloudSize: %d. deskews: %d. range_short: %d. rowOOB: %d. colOOB: %d. occupied %d.\n",
+        //        fullCloud->points.size(), rangeMat.rows*rangeMat.cols, laserCloudIn->points.size(), total_deskews,
+        //        range_short, rowOOB, colOOB, occupied);
+        // int total_points_checked = 0;
+        // for(auto scans_count : scan_checklist)
+        // {
+        //     printf("scanID: %d, points: %d\n", scans_count.first, scans_count.second);
+        //     total_points_checked += scans_count.second;
+        // }
+        // printf("scans total: %d. Total checked: %d\n\n", scan_checklist.size(), total_points_checked);
     }
 
     void cloudExtraction()
@@ -622,7 +622,7 @@ public:
             cloudInfo.endRingIndex[i] = count -1 - 5;
         }
 
-        printf("extractedCloud size: %d. count: %d. rejected: %d\n", extractedCloud->points.size(), count, rejected_count);
+        // printf("extractedCloud size: %d. count: %d. rejected: %d\n", extractedCloud->points.size(), count, rejected_count);
     }
     
     void publishClouds()

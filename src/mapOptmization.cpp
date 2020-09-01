@@ -747,9 +747,9 @@ public:
 
     void updateInitialGuess()
     {
-        printf("cloudKeyPoses3D->points.empty(): %s\n", cloudKeyPoses3D->points.empty()? "true" : "false");
-        printf("cloudInfo.odomAvailable: %s\n", cloudInfo.odomAvailable? "true" : "false");
-        printf("cloudInfo.imuAvailable: %s\n\n", cloudInfo.imuAvailable? "true" : "false");
+        // printf("cloudKeyPoses3D->points.empty(): %s\n", cloudKeyPoses3D->points.empty()? "true" : "false");
+        // printf("cloudInfo.odomAvailable: %s\n", cloudInfo.odomAvailable? "true" : "false");
+        // printf("cloudInfo.imuAvailable: %s\n\n", cloudInfo.imuAvailable? "true" : "false");
         
         // save current transformation before any processing
         incrementalOdometryAffineFront = trans2Affine3f(transformTobeMapped);
@@ -840,7 +840,7 @@ public:
 
         static int call_count = 0;
         call_count++;
-        printf("call_count: %d. cloudKeyPoses3D.size(): %d\n", call_count, cloudKeyPoses3D->size());
+        // printf("call_count: %d. cloudKeyPoses3D.size(): %d\n", call_count, cloudKeyPoses3D->size());
         // extract all the nearby key poses and downsample them
         kdtreeSurroundingKeyPoses->setInputCloud(cloudKeyPoses3D); // create kd-tree
         kdtreeSurroundingKeyPoses->radiusSearch(cloudKeyPoses3D->back(), (double)surroundingKeyframeSearchRadius, pointSearchInd, pointSearchSqDis);
@@ -1476,7 +1476,7 @@ public:
         // gtSAMgraph.print("GTSAM Graph:\n");
 
         // update iSAM
-        printf("gtSAMgraph.size(): %d\n", gtSAMgraph.size());
+        // printf("gtSAMgraph.size(): %d\n", gtSAMgraph.size());
         isam->update(gtSAMgraph, initialEstimate);
         isam->update();
 

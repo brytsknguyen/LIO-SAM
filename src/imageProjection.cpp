@@ -548,8 +548,8 @@ public:
             }
 
             float range = pointDistance(thisPoint);
-            
-            if (range < 1.0)
+
+            if (range < lidarMinRange || range > lidarMaxRange)
             {
                 range_short++;
                 // printf("range below 1.0: %f\n", range);

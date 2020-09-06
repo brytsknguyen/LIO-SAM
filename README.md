@@ -117,7 +117,7 @@ The user needs to prepare the point cloud data in the correct format for cloud d
       - **Campus dataset (small):** [[Google Drive](https://drive.google.com/file/d/1_V-cFMTQ4RO-_16mU9YPUE8ozsPeddCv/view?usp=sharing)][[Dropbox](https://www.dropbox.com/s/33u6epkfu36i1fd/west.bag.zip?dl=0)]
       
   * Ouster (OS1-128) dataset. No extrinsics need to be changed for this dataset if you are using the default settings. Please follow the Ouster notes below to configure the package to run with Ouster data. A video of the dataset can be found on [YouTube](https://youtu.be/O7fKgZQzkEo):
-    - **Rooftop dataset:** [[Google Drive](https://drive.google.com/file/d/1Qy2rZdPudFhDbATPpblioBb8fRtjDGQj/view?usp=sharing)]
+    - **Rooftop dataset:** [[Google Drive](https://drive.google.com/file/d/1Qy2rZdPudFhDbATPpbliroBb8fRtjDGQj/view?usp=sharing)]
 
   * KITTI dataset. The extrinsics can be found in the Notes KITTI section below. To generate more bags using other KITTI raw data, you can use the python script provided in "config/doc/kitti2bag".
     - **2011_09_30_drive_0028:** [[Google Drive](https://drive.google.com/file/d/12h3ooRAZVTjoMrf3uv1_KriEXm33kHc7/view?usp=sharing)]
@@ -126,7 +126,7 @@ The user needs to prepare the point cloud data in the correct format for cloud d
 
 1. Run the launch file:
 ```
-roslaunch lio_sam run.launch
+roslaunch liro_sam run.launch
 ```
 
 2. Play existing bag files:
@@ -194,7 +194,7 @@ rosbag play your-bag.bag -r 3
 
 Thank you for citing [LIO-SAM (IROS-2020)](./config/doc/paper.pdf) if you use any of this code. 
 ```
-@inproceedings{liosam2020shan,
+@inproceedings{lirosam2020shan,
   title={LIO-SAM: Tightly-coupled Lidar Inertial Odometry via Smoothing and Mapping},
   author={Shan, Tixiao and Englot, Brendan and Meyers, Drew and Wang, Wei and Ratti, Carlo and Rus Daniela},
   journal={IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)}

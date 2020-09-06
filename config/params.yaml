@@ -1,4 +1,4 @@
-lio_sam:
+liro_sam:
 
   # Topics
   pointCloudTopic: "points_raw"               # Point cloud data

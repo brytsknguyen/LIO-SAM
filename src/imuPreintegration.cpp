@@ -56,11 +56,11 @@ public:
             }
         }
 
-        subLaserOdometry = nh.subscribe<nav_msgs::Odometry>("lio_sam/mapping/odometry", 5, &TransformFusion::lidarOdometryHandler, this, ros::TransportHints().tcpNoDelay());
+        subLaserOdometry = nh.subscribe<nav_msgs::Odometry>("liro_sam/mapping/odometry", 5, &TransformFusion::lidarOdometryHandler, this, ros::TransportHints().tcpNoDelay());
         subImuOdometry   = nh.subscribe<nav_msgs::Odometry>(odomTopic+"_incremental",   2000, &TransformFusion::imuOdometryHandler,   this, ros::TransportHints().tcpNoDelay());
 
         pubImuOdometry   = nh.advertise<nav_msgs::Odometry>(odomTopic, 2000);
-        pubImuPath       = nh.advertise<nav_msgs::Path>    ("lio_sam/imu/path", 1);
+        pubImuPath       = nh.advertise<nav_msgs::Path>    ("liro_sam/imu/path", 1);
     }
 
     Eigen::Affine3f odom2affine(nav_msgs::Odometry odom)
@@ -204,7 +204,7 @@ public:
     IMUPreintegration()
     {
         subImu      = nh.subscribe<sensor_msgs::Imu>  (imuTopic,                   2000, &IMUPreintegration::imuHandler,      this, ros::TransportHints().tcpNoDelay());
-        subOdometry = nh.subscribe<nav_msgs::Odometry>("lio_sam/mapping/odometry_incremental", 5,    &IMUPreintegration::odometryHandler, this, ros::TransportHints().tcpNoDelay());
+        subOdometry = nh.subscribe<nav_msgs::Odometry>("liro_sam/mapping/odometry_incremental", 5,    &IMUPreintegration::odometryHandler, this, ros::TransportHints().tcpNoDelay());
 
         pubImuOdometry = nh.advertise<nav_msgs::Odometry> (odomTopic+"_incremental", 2000);
 
@@ -506,6 +506,20 @@ public:
 
         imuQueOpt.push_back(thisImu);
         imuQueImu.push_back(thisImu);
+
+        static bool one_shot = true;
+        if (one_shot)
+        {
+            double initroll, initpitch, inityaw;
+            
+            tf::Matrix3x3(tf::Quaternion(thisImu.orientation.x,
+                                         thisImu.orientation.y,
+                                         thisImu.orientation.z,
+                                         thisImu.orientation.w)).getRPY(initroll, initpitch, inityaw);
+            printf("Preint, Init YPR: %f, %f, %f\n", initroll*180/M_PI, initpitch*180/M_PI, inityaw*180/M_PI);
+
+            one_shot = false;
+        }
 
         if (doneFirstOpt == false)
             return;

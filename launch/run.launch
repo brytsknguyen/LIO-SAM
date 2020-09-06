@@ -1,26 +1,28 @@
 <launch>
 
-    <arg name="project"       default="lio_sam"/>
+    <arg name="project"       default="liro_sam"/>
     <arg name="publish_clock" default="--clock"/>
 
     
     <!-- Parameters -->
-    <!-- <rosparam file="$(find lio_sam)/config/params.yaml" command="load" /> -->
-    <!-- <rosparam file="$(find lio_sam)/config/params_ouster128.yaml" command="load" /> -->
-    <!-- <rosparam file="$(find lio_sam)/config/params_ousterext.yaml" command="load" /> -->
-    <rosparam file="$(find lio_sam)/config/params_bca.yaml" command="load" />
+    <!-- <rosparam file="$(find liro_sam)/config/params.yaml" command="load" /> -->
+    <!-- <rosparam file="$(find liro_sam)/config/params_ouster128.yaml" command="load" /> -->
+    <!-- <rosparam file="$(find liro_sam)/config/params_ousterext.yaml" command="load" /> -->
+    <rosparam file="$(find liro_sam)/config/params_bca_horz.yaml" command="load" />
+    <!-- <rosparam file="$(find liro_sam)/config/params_bca_vert.yaml" command="load" /> -->
+
 
     <!--- LOAM -->
-    <include file="$(find lio_sam)/launch/include/module_loam.launch" />
+    <include file="$(find liro_sam)/launch/include/module_loam.launch" />
 
     <!--- Robot State TF -->
-    <!-- <include file="$(f9ind lio_sam)/launch/include/module_robot_state_publisher.launch" /> -->
+    <!-- <include file="$(f9ind liro_sam)/launch/include/module_robot_state_publisher.launch" /> -->
 
     <!--- Run Navsat -->
-    <!-- <include file="$(find lio_sam)/launch/include/module_navsat.launch" /> -->
+    <!-- <include file="$(find liro_sam)/launch/include/module_navsat.launch" /> -->
 
     <!--- Run Rviz-->
-    <include file="$(find lio_sam)/launch/include/module_rviz.launch" />
+    <include file="$(find liro_sam)/launch/include/module_rviz.launch" />
 
     <!-- Play the bag file -->
     <param name="/use_sim_time" value="true" />
@@ -31,7 +33,7 @@
     <!-- <node required="true" pkg="rosbag" type="play" name="rosbag_play"
           args="$(arg publish_clock) /home/tmn/DATASETS/LIOSAM/ousterext.bag"/> -->
     <node required="true" pkg="rosbag" type="play" name="rosbag_play"
-          args="$(arg publish_clock) /media/tmn/mySamsungSSD/bca_clementi_20200116/007_321_facade_complete/imu_uwb_cam_lidar_leica.bag"/>
+          args="$(arg publish_clock) /media/tmn/mySamsungSSD/bca_clementi_20200116/007_321_facade_complete/imu_uwb_cam_lidar_leica_mani_mod.bag"/>
     <!-- <node required="true" pkg="rosbag" type="play" name="rosbag_play"
           args="$(arg publish_clock) /media/tmn/mySamsungSSD/bca_clementi_20200116/005_323_near_school_later/imu_uwb_cam_lidar_leica.bag"/> -->
           

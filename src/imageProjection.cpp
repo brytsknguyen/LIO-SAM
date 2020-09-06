@@ -1,5 +1,5 @@
 #include "utility.h"
-#include "lio_sam/cloud_info.h"
+#include "liro_sam/cloud_info.h"
 
 // Ouster
 struct PointXYZIRT {
@@ -64,7 +64,7 @@ private:
     float odomIncreY;
     float odomIncreZ;
 
-    lio_sam::cloud_info cloudInfo;
+    liro_sam::cloud_info cloudInfo;
     double timeScanCur;
     double timeScanEnd;
     std_msgs::Header cloudHeader;
@@ -78,8 +78,8 @@ public:
         subOdom       = nh.subscribe<nav_msgs::Odometry>(odomTopic+"_incremental", 2000, &ImageProjection::odometryHandler, this, ros::TransportHints().tcpNoDelay());
         subLaserCloud = nh.subscribe<sensor_msgs::PointCloud2>(pointCloudTopic, 5, &ImageProjection::cloudHandler, this, ros::TransportHints().tcpNoDelay());
 
-        pubExtractedCloud = nh.advertise<sensor_msgs::PointCloud2> ("lio_sam/deskew/cloud_deskewed", 1);
-        pubLaserCloudInfo = nh.advertise<lio_sam::cloud_info> ("lio_sam/deskew/cloud_info", 1);
+        pubExtractedCloud = nh.advertise<sensor_msgs::PointCloud2> ("liro_sam/deskew/cloud_deskewed", 1);
+        pubLaserCloudInfo = nh.advertise<liro_sam::cloud_info> ("liro_sam/deskew/cloud_info", 1);
 
         allocateMemory();
         resetParameters();
@@ -495,31 +495,36 @@ public:
         for (int i = 0; i < cloudSize; ++i)
         {
 
+
+            // if ( int(laserCloudIn->points[i].ring + 1)%4 != 0)
+            //     continue;
+
+            int rowIdn = laserCloudIn->points[i].ring;
+
             // printf("rowIdn: %d\n", rowIdn);
 
-            if ( int(laserCloudIn->points[i].ring + 1)%4 != 0)
-                continue;
-
-            int rowIdn = int((laserCloudIn->points[i].ring + 1)/4);
-
             PointType thisPoint;
+
             thisPoint.x = laserCloudIn->points[i].x;
             thisPoint.y = laserCloudIn->points[i].y;
             thisPoint.z = laserCloudIn->points[i].z;
             thisPoint.intensity = laserCloudIn->points[i].intensity;
 
-            if (pointDistance(thisPoint) != 0)
-            {
-                auto iter = scan_checklist.find(rowIdn);
-                if (iter == scan_checklist.end())
-                    scan_checklist[rowIdn] = 0;
+            // Convert the point to the base_link frame
+            pointConverter(thisPoint);
 
-                scan_checklist[rowIdn] += 1;
-            }
+            // if (pointDistance(thisPoint) != 0)
+            // {
+            //     auto iter = scan_checklist.find(rowIdn);
+            //     if (iter == scan_checklist.end())
+            //         scan_checklist[rowIdn] = 0;
+
+            //     scan_checklist[rowIdn] += 1;
+            // }
 
             if (rowIdn < 0 || rowIdn >= N_SCAN)
             {
-                // printf("row out of bound: %d. Dist: %f.\n", rowIdn, pointDistance(thisPoint));
+                printf("row out of bound: %d. Dist: %f.\n", rowIdn, pointDistance(thisPoint));
 
                 rowOOB++;
                 continue;
@@ -579,13 +584,14 @@ public:
             fullCloud->points[index] = thisPoint;
         }
 
-        // printf("fullCloud size: %d. rangeMat size: %d. cloudSize: %d. deskews: %d. range_short: %d. rowOOB: %d. colOOB: %d. occupied %d.\n",
-        //        fullCloud->points.size(), rangeMat.rows*rangeMat.cols, laserCloudIn->points.size(), total_deskews,
-        //        range_short, rowOOB, colOOB, occupied);
+        // printf("fullCloud size: %dx%d=%d. cloudSize: %d.\ndeskews: %d. range_short: %d.\n",
+        //        rangeMat.rows, rangeMat.cols, rangeMat.rows*rangeMat.cols, laserCloudIn->points.size(), total_deskews,
+        //        range_short
+        //        );
         // int total_points_checked = 0;
         // for(auto scans_count : scan_checklist)
         // {
-        //     printf("scanID: %d, points: %d\n", scans_count.first, scans_count.second);
+        //     printf("scanID: %d, ring: %d. points: %d\n", scans_count.first, scans_count.first, scans_count.second);
         //     total_points_checked += scans_count.second;
         // }
         // printf("scans total: %d. Total checked: %d\n\n", scan_checklist.size(), total_points_checked);
@@ -635,7 +641,7 @@ public:
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "lio_sam");
+    ros::init(argc, argv, "liro_sam");
 
     ImageProjection IP;
     

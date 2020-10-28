@@ -44,7 +44,7 @@ liro_sam:
                        0,  1,  0,
                        0,  0, -1]
   # Extrinsics (base_link -> IMU)
-  extrinsicTrans: [0.05, 0.00, 0.05]
+  extrinsicTrans: [0.0, 0.00, 0.0]
   extrinsicRot: [ 1,  0,  0,
                   0, -1,  0,
                   0,  0, -1]

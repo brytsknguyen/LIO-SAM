@@ -158,6 +158,7 @@ public:
                 int sp = (cloudInfo.startRingIndex[i] * (6 - j) + cloudInfo.endRingIndex[i] * j) / 6;
                 int ep = (cloudInfo.startRingIndex[i] * (5 - j) + cloudInfo.endRingIndex[i] * (j + 1)) / 6 - 1;
 
+                // printf("scan: %d. sp: %d, ep: %d\n", i, sp, ep);
                 if (sp >= ep)
                     continue;
 

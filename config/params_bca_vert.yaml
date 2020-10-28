@@ -40,13 +40,13 @@ liro_sam:
 
 
   # Rotation from base_link to lidar
-  lidar2BaselinkRot: [ 1,  0,  0,
-                       0,  1,  0,
+  lidar2BaselinkRot: [-1,  0,  0,
+                       0, -1,  0,
                        0,  0,  1]
   # Extrinsics (base_link -> IMU)
   extrinsicTrans: [0.55, -0.05, 0.00]
-  extrinsicRot: [ 1,  0,  0,
-                  0,  0,  1,
+  extrinsicRot: [-1,  0,  0,
+                  0,  0, -1,
                   0, -1,  0]
   extrinsicRPY: [ 1,  0,  0,
                   0, -1,  0,

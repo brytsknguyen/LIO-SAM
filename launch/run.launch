@@ -33,7 +33,7 @@
     <!-- <node required="true" pkg="rosbag" type="play" name="rosbag_play"
           args="$(arg publish_clock) /home/tmn/DATASETS/LIOSAM/ousterext.bag"/> -->
     <node required="true" pkg="rosbag" type="play" name="rosbag_play"
-          args="$(arg publish_clock) /media/tmn/mySamsungSSD/bca_clementi_20200116/007_321_facade_complete/imu_uwb_cam_lidar_leica_mani_mod.bag"/>
+          args="$(arg publish_clock) /media/tmn/mySamsungSSD/bca_clementi_20200116/007_321_facade_complete/imu_uwb_cam_lidar_leica_mod.bag"/>
     <!-- <node required="true" pkg="rosbag" type="play" name="rosbag_play"
           args="$(arg publish_clock) /media/tmn/mySamsungSSD/bca_clementi_20200116/005_323_near_school_later/imu_uwb_cam_lidar_leica.bag"/> -->
           

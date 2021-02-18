@@ -1,7 +1,8 @@
 <launch>
 
     <arg name="project" default="lio_sam"/>
-    
+    <arg name="publish_clock" default="--clock"/>
+
     <!-- Parameters -->
     <rosparam file="$(find lio_sam)/config/params.yaml" command="load" />
 
@@ -9,10 +10,19 @@
     <include file="$(find lio_sam)/launch/include/module_loam.launch" />
 
     <!--- Robot State TF -->
-    <include file="$(find lio_sam)/launch/include/module_robot_state_publisher.launch" />
+    <!-- <include file="$(find lio_sam)/launch/include/module_robot_state_publisher.launch" /> -->
 
     <!--- Run Navsat -->
-    <include file="$(find lio_sam)/launch/include/module_navsat.launch" />
+    <!-- <include file="$(find lio_sam)/launch/include/module_navsat.launch" /> -->
+
+    <param name="/use_sim_time" value="true" />
+    <!-- <node required="true" pkg="rosbag" type="play" name="rosbag_play"
+          args="$(arg publish_clock) /home/$(env USER)/DATASETS/LIOSAM/20200707_ouster.bag"/> -->
+    
+    <node required="true" pkg="rosbag" type="play" name="rosbag_play"
+          args="$(arg publish_clock) /media/tmn/mySamsungSSD/NTU_20201227/eee_01/eee_01.bag"/>
+    <!-- <node required="true" pkg="rosbag" type="play" name="rosbag_play"
+          args="$(arg publish_clock) /media/tmn/mySamsungSSD/NTU_20201227/sbs_03/sbs_03.bag"/> -->
 
     <!--- Run Rviz-->
     <include file="$(find lio_sam)/launch/include/module_rviz.launch" />

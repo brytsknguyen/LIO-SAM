@@ -106,11 +106,14 @@ public:
     float imuRPYWeight;
     vector<double> extRotV;
     vector<double> extRPYV;
+    vector<double> R_W2NEDV;
     vector<double> extTransV;
     Eigen::Matrix3d extRot;
     Eigen::Matrix3d extRPY;
+    Eigen::Matrix3d R_W2NED;
     Eigen::Vector3d extTrans;
     Eigen::Quaterniond extQRPY;
+    Eigen::Quaterniond quat_W2NED;
 
     // LOAM
     float edgeThreshold;
@@ -203,11 +206,14 @@ public:
         nh.param<float>("lio_sam/imuRPYWeight", imuRPYWeight, 0.01);
         nh.param<vector<double>>("lio_sam/extrinsicRot", extRotV, vector<double>());
         nh.param<vector<double>>("lio_sam/extrinsicRPY", extRPYV, vector<double>());
+        nh.param<vector<double>>("lio_sam/R_W2NED", R_W2NEDV, vector<double>());
         nh.param<vector<double>>("lio_sam/extrinsicTrans", extTransV, vector<double>());
-        extRot = Eigen::Map<const Eigen::Matrix<double, -1, -1, Eigen::RowMajor>>(extRotV.data(), 3, 3);
-        extRPY = Eigen::Map<const Eigen::Matrix<double, -1, -1, Eigen::RowMajor>>(extRPYV.data(), 3, 3);
+        extRot   = Eigen::Map<const Eigen::Matrix<double, -1, -1, Eigen::RowMajor>>(extRotV.data(), 3, 3);
+        extRPY   = Eigen::Map<const Eigen::Matrix<double, -1, -1, Eigen::RowMajor>>(extRPYV.data(), 3, 3);
+        R_W2NED  = Eigen::Map<const Eigen::Matrix<double, -1, -1, Eigen::RowMajor>>(R_W2NEDV.data(), 3, 3);
         extTrans = Eigen::Map<const Eigen::Matrix<double, -1, -1, Eigen::RowMajor>>(extTransV.data(), 3, 1);
-        extQRPY = Eigen::Quaterniond(extRPY);
+        extQRPY  = Eigen::Quaterniond(extRPY);
+        quat_W2NED  = Eigen::Quaterniond(R_W2NED);
 
         nh.param<float>("lio_sam/edgeThreshold", edgeThreshold, 0.1);
         nh.param<float>("lio_sam/surfThreshold", surfThreshold, 0.1);
@@ -261,7 +267,7 @@ public:
         imu_out.angular_velocity.z = gyr.z();
         // rotate roll pitch yaw
         Eigen::Quaterniond q_from(imu_in.orientation.w, imu_in.orientation.x, imu_in.orientation.y, imu_in.orientation.z);
-        Eigen::Quaterniond q_final = q_from * extQRPY;
+        Eigen::Quaterniond q_final = quat_W2NED * q_from * extQRPY;
         imu_out.orientation.x = q_final.x();
         imu_out.orientation.y = q_final.y();
         imu_out.orientation.z = q_final.z();

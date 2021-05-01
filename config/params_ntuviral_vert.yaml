@@ -1,7 +1,7 @@
 lio_sam:
 
   # Topics
-  pointCloudTopic: "/os1_cloud_node1/points"  # Point cloud data
+  pointCloudTopic: "/os1_cloud_node2/points"  # Point cloud data
   imuTopic:  "/imu/imu"                       # IMU data
   odomTopic: "odometry/imu"                   # IMU pre-preintegration odometry, same frequency as IMU
   gpsTopic:  "odometry/gpsz"                  # GPS odometry topic from navsat, see module_navsat.launch file
@@ -39,19 +39,19 @@ lio_sam:
   imuRPYWeight: 0.01
 
   # Extrinsics (lidar -> IMU)
-  extrinsicTrans: [-0.05, 0.0, 0.055]
+  extrinsicTrans: [0.55, -0.03, -0.05]
 
-  extrinsicRot: [ 1,  0,  0,
-                  0,  1,  0,
-                  0,  0,  1]
+  extrinsicRot: [-1,  0,  0,
+                  0,  0,  1,
+                  0,  1,  0]
 
-  extrinsicRPY: [ 1,  0,  0,
-                  0,  1,  0,
-                  0,  0,  1]
+  extrinsicRPY: [-1,  0,  0,
+                  0,  0,  1,
+                  0,  1,  0]
 
   R_W2NED:      [ 1,  0,  0,
                   0, -1,  0,
-                  0,  0, -1]                  
+                  0,  0, -1]
 
   # LOAM feature threshold
   edgeThreshold: 1.0

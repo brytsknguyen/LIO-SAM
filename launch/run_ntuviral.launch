@@ -1,9 +1,12 @@
 <launch>
 
-    <arg name="project" default="lio_sam"/>
+    <arg name="project"       default="lio_sam"/>
     <arg name="publish_clock" default="--clock"/>
+    <arg name="autorun"       default="false"/>
+    
 
     <!-- Parameters -->
+    <!-- <rosparam file="$(find lio_sam)/config/params_clementi_horz.yaml" command="load" /> -->
     <rosparam file="$(find lio_sam)/config/params_ntuviral_horz.yaml" command="load" />
 
     <!--- LOAM -->
@@ -16,15 +19,16 @@
     <!-- <include file="$(find lio_sam)/launch/include/module_navsat.launch" /> -->
 
     <param name="/use_sim_time" value="true" />
-    <!-- <node required="true" pkg="rosbag" type="play" name="rosbag_play"
-          args="$(arg publish_clock) /home/$(env USER)/DATASETS/LIOSAM/20200707_ouster.bag"/> -->
     
-    <node required="true" pkg="rosbag" type="play" name="rosbag_play"
-          args="$(arg publish_clock) /media/tmn/mySamsungSSD/NTU_20201227/eee_01/eee_01.bag"/>
-    <!-- <node required="true" pkg="rosbag" type="play" name="rosbag_play"
-          args="$(arg publish_clock) /media/tmn/mySamsungSSD/NTU_20201227/sbs_03/sbs_03.bag"/> -->
+    <!-- LIO SAMPLE -->
+    <arg name="bag_file" default="/media/tmn/myHPSSD/NTU_VIRAL/eee_01/eee_01.bag"/>
+
+
+    <node required="$(arg autorun)" pkg="rosbag" type="play" name="rosbag_play"
+          args="$(arg publish_clock) $(arg bag_file)"/>
 
     <!--- Run Rviz-->
     <include file="$(find lio_sam)/launch/include/module_rviz.launch" />
+    <!-- <node pkg="rviz" type="rviz" name="rviz" output="screen"/> -->
 
 </launch>

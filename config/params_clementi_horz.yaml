@@ -39,14 +39,14 @@ lio_sam:
   imuRPYWeight: 0.01
 
   # Extrinsics (lidar -> IMU)
-  extrinsicTrans: [-0.05, 0.0, 0.055]
+  extrinsicTrans: [0.0, 0.0, 0.0]
 
-  extrinsicRot: [ 1,  0,  0,
-                  0,  1,  0,
+  extrinsicRot: [-1,  0,  0,
+                  0, -1,  0,
                   0,  0,  1]
 
-  extrinsicRPY: [ 1,  0,  0,
-                  0,  1,  0,
+  extrinsicRPY: [-1,  0,  0,
+                  0, -1,  0,
                   0,  0,  1]
 
   R_W2NED:      [ 1,  0,  0,
@@ -69,7 +69,7 @@ lio_sam:
   rotation_tollerance: 1000                     # radians
 
   # CPU Params
-  numberOfCores: 4                              # number of cores for mapping optimization
+  numberOfCores: 6                              # number of cores for mapping optimization
   mappingProcessInterval: 0.15                  # seconds, regulate mapping frequency
 
   # Surrounding map

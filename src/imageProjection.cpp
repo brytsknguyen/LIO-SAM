@@ -68,6 +68,7 @@ private:
 
     pcl::PointCloud<PointXYZIRT>::Ptr laserCloudIn;
     pcl::PointCloud<OusterPointXYZIRT>::Ptr tmpOusterCloudIn;
+    pcl::PointCloud<PointType>::Ptr tmpAirSimCloudIn;
     pcl::PointCloud<PointType>::Ptr   fullCloud;
     pcl::PointCloud<PointType>::Ptr   extractedCloud;
 
@@ -106,6 +107,7 @@ public:
     {
         laserCloudIn.reset(new pcl::PointCloud<PointXYZIRT>());
         tmpOusterCloudIn.reset(new pcl::PointCloud<OusterPointXYZIRT>());
+        tmpAirSimCloudIn.reset(new pcl::PointCloud<PointType>());
         fullCloud.reset(new pcl::PointCloud<PointType>());
         extractedCloud.reset(new pcl::PointCloud<PointType>());
 
@@ -222,6 +224,34 @@ public:
                 dst.time = src.t * 1e-9f;
             }
         }
+        else if (sensor == SensorType::AIRSIM)
+        {
+            static double vert_ang_step = 2*16.611/15;
+            static double vert_ang_step_half = 16.611/15;
+            
+            pcl::fromROSMsg(*laserCloudMsg, *tmpAirSimCloudIn);
+            
+            int cloudsize = tmpAirSimCloudIn->size();
+            
+            laserCloudIn->points.resize(cloudsize);
+            laserCloudIn->is_dense = true;
+
+            // #pragma omp parallel for num_threads(NUM_CORE)
+            for (size_t i = 0; i < cloudsize; i++)
+            {
+                auto &src = tmpAirSimCloudIn->points[i];
+                auto &dst = laserCloudIn->points[i];
+
+                float  sign = (src.z >= 0 ? 1 : -1);
+                double vert_angle = sign*atan2(fabs(src.z), sqrt(src.x*src.x + src.y*src.y)) * 180 / M_PI;
+                dst.x = src.x;
+                dst.y = src.y;
+                dst.z = src.z;
+                dst.intensity = 100;
+                dst.ring = round((vert_angle + 16.611)/vert_ang_step);
+                dst.time = 0;
+            }
+        }
         else
         {
             ROS_ERROR_STREAM("Unknown sensor type: " << int(sensor));
@@ -240,28 +270,30 @@ public:
             ros::shutdown();
         }
 
-        // check ring channel
-        static int ringFlag = 0;
-        if (ringFlag == 0)
+        if (sensor != SensorType::AIRSIM)
         {
-            ringFlag = -1;
-            for (int i = 0; i < (int)currentCloudMsg.fields.size(); ++i)
+            // check ring channel
+            static int ringFlag = 0;
+            if (ringFlag == 0)
             {
-                if (currentCloudMsg.fields[i].name == "ring")
+                ringFlag = -1;
+                for (int i = 0; i < (int)currentCloudMsg.fields.size(); ++i)
                 {
-                    ringFlag = 1;
-                    break;
+                    if (currentCloudMsg.fields[i].name == "ring")
+                    {
+                        ringFlag = 1;
+                        break;
+                    }
+                }
+                if (ringFlag == -1)
+                {
+                    ROS_ERROR("Point cloud ring channel not available, please configure your point cloud data!");
+                    ros::shutdown();
                 }
             }
-            if (ringFlag == -1)
-            {
-                ROS_ERROR("Point cloud ring channel not available, please configure your point cloud data!");
-                ros::shutdown();
-            }
-        }
 
-        // check point time
-        if (deskewFlag == 0)
+            // check point time
+            if (deskewFlag == 0)
         {
             deskewFlag = -1;
             for (auto &field : currentCloudMsg.fields)
@@ -275,7 +307,7 @@ public:
             if (deskewFlag == -1)
                 ROS_WARN("Point cloud timestamp not available, deskew function disabled, system will drift significantly!");
         }
-
+        }
         return true;
     }
 

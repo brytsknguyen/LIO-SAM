@@ -51,7 +51,7 @@ lio_sam:
 
   R_W2NED:      [ 1,  0,  0,
                   0, -1,  0,
-                  0,  0, -1]                  
+                  0,  0, -1]
 
   # LOAM feature threshold
   edgeThreshold: 1.0

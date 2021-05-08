@@ -13,10 +13,11 @@ echo CURRENT DIR: $CURR_DIR
 echo VIRAL DIR:   $PACKAGE_DIR
 
 export EPOC_DIR=/home/$USER/nucssd2/MATLAB_WS/RAL_VIRAL_SLAM/ntuviral_liosam
-export DATASET_LOCATION=/media/tmn/myHPSSD/NTU_VIRAL/
+export DATASET_LOCATION=/home/$USER/DATASETS/NTU_VIRAL/
+# export DATASET_LOCATION=/media/tmn/myHPSSD/NTU_VIRAL/
 
 export CAPTURE_SCREEN=false;
-export LOG_DATA=true;
+export LOG_DATA=false;
 
 #region 0 UWB NO VIS --------------------------------------------------------------------------------------------------
 

@@ -12,9 +12,9 @@ cd $CURR_DIR
 echo CURRENT DIR: $CURR_DIR
 echo VIRAL DIR:   $PACKAGE_DIR
 
-export EPOC_DIR=/home/$USER/nucssd2/MATLAB_WS/RAL_VIRAL_SLAM/airsim_liosam
-export DATASET_LOCATION=/home/$USER/DATASETS/AirSim/
-# export DATASET_LOCATION=/media/$USER/myHPSSD/AirSim
+export EPOC_DIR=/home/$USER/nucssd2/MATLAB_WS/RAL_VIRAL_SLAM/clementi_liosam
+export DATASET_LOCATION=/home/$USER/DATASETS/clementi/
+# export DATASET_LOCATION=/media/tmn/myHPSSD/clementi/
 
 export CAPTURE_SCREEN=false;
 export LOG_DATA=false;
@@ -22,16 +22,11 @@ export LOG_DATA=false;
 #region 0 UWB NO VIS --------------------------------------------------------------------------------------------------
 
 wait;
-./run_one_bag_airsim.sh $EPOC_DIR $DATASET_LOCATION $PACKAGE_DIR nbh_01 $CAPTURE_SCREEN $LOG_DATA 450 0 0 0.75 -1;
+./run_one_bag_clementi.sh $EPOC_DIR $DATASET_LOCATION $PACKAGE_DIR blk321_full    $CAPTURE_SCREEN $LOG_DATA 450 0 0 0.75 -1;
 wait;
-./run_one_bag_airsim.sh $EPOC_DIR $DATASET_LOCATION $PACKAGE_DIR nbh_02 $CAPTURE_SCREEN $LOG_DATA 450 0 0 0.75 -1;
+./run_one_bag_clementi.sh $EPOC_DIR $DATASET_LOCATION $PACKAGE_DIR blk321_earlier $CAPTURE_SCREEN $LOG_DATA 450 0 0 0.75 -1;
 wait;
-./run_one_bag_airsim.sh $EPOC_DIR $DATASET_LOCATION $PACKAGE_DIR nbh_03 $CAPTURE_SCREEN $LOG_DATA 450 0 0 0.75 -1;
-wait;
-./run_one_bag_airsim.sh $EPOC_DIR $DATASET_LOCATION $PACKAGE_DIR nbh_04 $CAPTURE_SCREEN $LOG_DATA 450 0 0 0.75 -1;
-wait;
-./run_one_bag_airsim.sh $EPOC_DIR $DATASET_LOCATION $PACKAGE_DIR nbh_05 $CAPTURE_SCREEN $LOG_DATA 450 0 0 0.75 -1;
-
+./run_one_bag_clementi.sh $EPOC_DIR $DATASET_LOCATION $PACKAGE_DIR blk321_later   $CAPTURE_SCREEN $LOG_DATA 450 0 0 0.75 -1;
 
 #endregion NO UWB NO VIS ----------------------------------------------------------------------------------------------
 

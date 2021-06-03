@@ -4,14 +4,14 @@ Panels:
     Name: Displays
     Property Tree Widget:
       Expanded:
-        - /Global Options1
         - /links1
-        - /Odometry1
+        - /Odometry1/Odom IMU1
+        - /Odometry1/Odom IMU1/Shape1
+        - /Odometry1/Odom lidar1
+        - /Odometry1/Odom lidar1/Shape1
         - /Point Cloud1
         - /Feature Cloud1
         - /Mapping1
-        - /PointCloud21
-        - /PointCloud21/Status1
       Splitter Ratio: 0.5600000023841858
     Tree Height: 710
   - Class: rviz/Selection
@@ -56,17 +56,17 @@ Visualization Manager:
           Reference Frame: map
           Value: true
         - Class: rviz/Axes
-          Enabled: true
+          Enabled: false
           Length: 1
           Name: base_link
           Radius: 0.30000001192092896
           Reference Frame: base_link
-          Value: true
+          Value: false
       Enabled: true
       Name: links
     - Class: rviz/Group
       Displays:
-        - Angle Tolerance: 0.10000000149011612
+        - Angle Tolerance: 0
           Class: rviz/Odometry
           Covariance:
             Orientation:
@@ -84,13 +84,13 @@ Visualization Manager:
               Value: true
             Value: false
           Enabled: true
-          Keep: 300
+          Keep: 1
           Name: Odom IMU
-          Position Tolerance: 0.10000000149011612
+          Position Tolerance: 0
           Shape:
             Alpha: 1
-            Axes Length: 0.5
-            Axes Radius: 0.10000000149011612
+            Axes Length: 1
+            Axes Radius: 0.30000001192092896
             Color: 255; 25; 0
             Head Length: 0.30000001192092896
             Head Radius: 0.10000000149011612
@@ -134,7 +134,7 @@ Visualization Manager:
           Topic: /odometry/gps
           Unreliable: false
           Value: true
-        - Angle Tolerance: 0.10000000149011612
+        - Angle Tolerance: 0
           Class: rviz/Odometry
           Covariance:
             Orientation:
@@ -151,14 +151,14 @@ Visualization Manager:
               Scale: 1
               Value: true
             Value: false
-          Enabled: false
-          Keep: 300
+          Enabled: true
+          Keep: 1
           Name: Odom lidar
-          Position Tolerance: 0.10000000149011612
+          Position Tolerance: 0
           Shape:
             Alpha: 1
-            Axes Length: 0.25
-            Axes Radius: 0.10000000149011612
+            Axes Length: 2
+            Axes Radius: 0.20000000298023224
             Color: 255; 25; 0
             Head Length: 0.30000001192092896
             Head Radius: 0.10000000149011612
@@ -167,13 +167,13 @@ Visualization Manager:
             Value: Axes
           Topic: /lio_sam/mapping/odometry
           Unreliable: false
-          Value: false
-      Enabled: false
+          Value: true
+      Enabled: true
       Name: Odometry
     - Class: rviz/Group
       Displays:
         - Alpha: 1
-          Autocompute Intensity Bounds: true
+          Autocompute Intensity Bounds: false
           Autocompute Value Bounds:
             Max Value: 10
             Min Value: -10
@@ -187,7 +187,7 @@ Visualization Manager:
           Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 121
+          Max Intensity: 128
           Min Color: 0; 0; 0
           Min Intensity: 0
           Name: Velodyne
@@ -301,7 +301,7 @@ Visualization Manager:
     - Class: rviz/Group
       Displays:
         - Alpha: 0.30000001192092896
-          Autocompute Intensity Bounds: true
+          Autocompute Intensity Bounds: false
           Autocompute Value Bounds:
             Max Value: 7.4858574867248535
             Min Value: -1.2309398651123047
@@ -315,7 +315,7 @@ Visualization Manager:
           Enabled: true
           Invert Rainbow: false
           Max Color: 255; 255; 255
-          Max Intensity: 112
+          Max Intensity: 128
           Min Color: 0; 0; 0
           Min Intensity: 0
           Name: Map (cloud)
@@ -476,41 +476,11 @@ Visualization Manager:
           Value: true
       Enabled: true
       Name: Mapping
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz/PointCloud2
-      Color: 255; 255; 255
-      Color Transformer: Intensity
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 420
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: PointCloud2
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Flat Squares
-      Topic: /os1_cloud_node1/points
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
   Enabled: true
   Global Options:
     Background Color: 0; 0; 0
     Default Light: true
-    Fixed Frame: sensor1/os1_lidar
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -522,7 +492,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 66.7411117553711
+      Distance: 25.828807830810547
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -537,10 +507,10 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5753985643386841
+      Pitch: 0.910398006439209
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 4.926675319671631
+      Yaw: 3.1716692447662354
     Saved: ~
 Window Geometry:
   Displays:
@@ -557,4 +527,4 @@ Window Geometry:
     collapsed: true
   Width: 1920
   X: 1920
-  Y: 0
+  Y: 20

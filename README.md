@@ -1,3 +1,26 @@
+# Hello
+
+This is a forked repository of [LIO-SAM](https://github.com/TixiaoShan/LIO-SAM).
+
+In this we add extra script and configuration files to quickly run the experiments on [NTU VIRAL dataset](https://ntu-aris.github.io/ntu_viral_dataset/).
+
+## Instructions
+
+1. After you have cloned and compiled the package, please cd to the launch folder by running `roscd lio_sam/launch`.
+
+2. Modify the script `runall_ntuviral.sh` to declare the output directory via the variable `EPOC_DIR`, and the path to the dataset via the `DATASET_LOCATION` variable. Note that the bag files should be orgnanized like in the figure below:
+
+<p align="center">
+  <img height="300" src="docs/picture/structure.png">
+</p>
+
+
+3. Run `bash runall_ntuviral.sh` to automatically launch the algo with the bag files one by one.
+
+4. The log files will be created in .csv format and you can use matlab or python to calculate the localization error against the ground truth on these logs. An example of the analysis can be found in the `LIO-SAM/analysis/ntuviral_liosam` folder. Just run the MATLAB script `checkall_parallel.m` and the results will be printed out.
+
+If you use the NTU VIRAL dataset in your work, please cite our work using the BibTex code at the dataset's [website](https://ntu-aris.github.io/ntu_viral_dataset/). Please also cite M-LOAM's publication below.
+
 # LIO-SAM
 
 **A real-time lidar-inertial odometry package. We strongly recommend the users read this document thoroughly and test the package with the provided dataset first. A video of the demonstration of the method can be found on [YouTube](https://www.youtube.com/watch?v=A0H8CoORZJU).**
@@ -31,9 +54,13 @@
 
   - [**Other notes**](#other-notes)
 
+  - [**Issues**](#issues)
+
   - [**Paper**](#paper)
 
   - [**TODO**](#todo)
+
+  - [**Related Package**](#related-package)
 
   - [**Acknowledgement**](#acknowledgement)
 
@@ -84,9 +111,9 @@ The user needs to prepare the point cloud data in the correct format for cloud d
 
 ## Prepare IMU data
 
-  - **IMU requirement**. Like the original LOAM implementation, LIO-SAM only works with a 9-axis IMU, which gives roll, pitch, and yaw estimation. The roll and pitch estimation is mainly used to initialize the system at the correct attitude. The yaw estimation initializes the system at the right heading when using GPS data. Theoretically, an initialization procedure like VINS-Mono will enable LIO-SAM to work with a 6-axis IMU. The performance of the system largely depends on the quality of the IMU measurements. The higher the IMU data rate, the better the system accuracy. We use Microstrain 3DM-GX5-25, which outputs data at 500Hz. We recommend using an IMU that gives at least a 200Hz output rate. Note that the internal IMU of Ouster lidar is not usable due to high vibration.
+  - **IMU requirement**. Like the original LOAM implementation, LIO-SAM only works with a 9-axis IMU, which gives roll, pitch, and yaw estimation. The roll and pitch estimation is mainly used to initialize the system at the correct attitude. The yaw estimation initializes the system at the right heading when using GPS data. Theoretically, an initialization procedure like VINS-Mono will enable LIO-SAM to work with a 6-axis IMU. The performance of the system largely depends on the quality of the IMU measurements. The higher the IMU data rate, the better the system accuracy. We use Microstrain 3DM-GX5-25, which outputs data at 500Hz. We recommend using an IMU that gives at least a 200Hz output rate. Note that the internal IMU of Ouster lidar is an 6-axis IMU.
 
-  - **IMU alignment**. LIO-SAM transforms IMU raw data from the IMU frame to the Lidar frame, which follows the ROS REP-105 convention (x - forward, y - left, z - upward). To make the system function properly, the correct extrinsic transformation needs to be provided in "params.yaml" file. Using our setup as an example:
+  - **IMU alignment**. LIO-SAM transforms IMU raw data from the IMU frame to the Lidar frame, which follows the ROS REP-105 convention (x - forward, y - left, z - upward). To make the system function properly, the correct extrinsic transformation needs to be provided in "params.yaml" file. **The reason why there are two extrinsics is that my IMU (Microstrain 3DM-GX5-25) acceleration and attitude have different cooridinates. Depend on your IMU manufacturer, the two extrinsics for your IMU may or may not be the same**. Using our setup as an example:
     - we need to set the readings of x-z acceleration and gyro negative to transform the IMU data in the lidar frame, which is indicated by "extrinsicRot" in "params.yaml." 
     - The transformation of attitude readings is slightly different. We rotate the attitude measurements by -90 degrees around "lidar-z" axis and get the corresponding roll, pitch, and yaw readings in the lidar frame. This transformation is indicated by "extrinsicRPY" in "params.yaml."
 
@@ -103,22 +130,22 @@ The user needs to prepare the point cloud data in the correct format for cloud d
 ## Sample datasets
 
   * Download some sample datasets to test the functionality of the package. The datasets below is configured to run using the default settings:
-    - **Walking dataset:** [[Google Drive](https://drive.google.com/file/d/1HN5fYPXEHbDq0E5JtbQPkCHIHUoTFFnN/view?usp=sharing)][[Dropbox](https://www.dropbox.com/s/jzql78speb1jbcc/casual_walk.bag.zip?dl=0)]
-    - **Park dataset:** [[Google Drive](https://drive.google.com/file/d/19PZieaJaVkXDs2ZromaHTxYoq0zkiHae/view?usp=sharing)][[Dropbox](https://www.dropbox.com/s/fnuxpdc4f9yyb55/park.bag.zip?dl=0)]
-    - **Garden dataset:** [[Google Drive](https://drive.google.com/file/d/1q6yuVhyJbkUBhut9yhfox2WdV4VZ9BZX/view?usp=sharing)]
+    - **Walking dataset:** [[Google Drive](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq?usp=sharing)]
+    - **Park dataset:** [[Google Drive](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq?usp=sharing)]
+    - **Garden dataset:** [[Google Drive](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq?usp=sharing)]
 
   * The datasets below need the parameters to be configured. In these datasets, the point cloud topic is "points_raw." The IMU topic is "imu_correct," which gives the IMU data in ROS REP105 standard. Because no IMU transformation is needed for this dataset, the following configurations need to be changed to run this dataset successfully:
     - The "imuTopic" parameter in "config/params.yaml" needs to be set to "imu_correct".
     - The "extrinsicRot" and "extrinsicRPY" in "config/params.yaml" needs to be set as identity matrices.
-      - **Rotation dataset:** [[Google Drive](https://drive.google.com/file/d/1V4ijY4PgLdjKmdzcQ18Xu7VdcHo2UaWI/view?usp=sharing)][[Dropbox](https://www.dropbox.com/s/xdwzjnqwr7x19cl/rotation.bag.zip?dl=0)]
-      - **Campus dataset (large):** [[Google Drive](https://drive.google.com/file/d/1q4Sf7s2veVc7bs08Qeha3stOiwsytopL/view?usp=sharing)][[Dropbox](https://www.dropbox.com/s/etgnfg39ha79b7a/big_loop.bag.zip?dl=0)]
-      - **Campus dataset (small):** [[Google Drive](https://drive.google.com/file/d/1_V-cFMTQ4RO-_16mU9YPUE8ozsPeddCv/view?usp=sharing)][[Dropbox](https://www.dropbox.com/s/33u6epkfu36i1fd/west.bag.zip?dl=0)]
+      - **Rotation dataset:** [[Google Drive](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq?usp=sharing)]
+      - **Campus dataset (large):** [[Google Drive](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq?usp=sharing)]
+      - **Campus dataset (small):** [[Google Drive](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq?usp=sharing)]
       
   * Ouster (OS1-128) dataset. No extrinsics need to be changed for this dataset if you are using the default settings. Please follow the Ouster notes below to configure the package to run with Ouster data. A video of the dataset can be found on [YouTube](https://youtu.be/O7fKgZQzkEo):
-    - **Rooftop dataset:** [[Google Drive](https://drive.google.com/file/d/1Qy2rZdPudFhDbATPpblioBb8fRtjDGQj/view?usp=sharing)]
+    - **Rooftop dataset:** [[Google Drive](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq?usp=sharing)]
 
   * KITTI dataset. The extrinsics can be found in the Notes KITTI section below. To generate more bags using other KITTI raw data, you can use the python script provided in "config/doc/kitti2bag".
-    - **2011_09_30_drive_0028:** [[Google Drive](https://drive.google.com/file/d/12h3ooRAZVTjoMrf3uv1_KriEXm33kHc7/view?usp=sharing)]
+    - **2011_09_30_drive_0028:** [[Google Drive](https://drive.google.com/drive/folders/1gJHwfdHCRdjP7vuT556pv8atqrCJPbUq?usp=sharing)]
 
 ## Run the package
 
@@ -164,21 +191,37 @@ rosbag play your-bag.bag -r 3
     - Hardware:
       - Use an external IMU. LIO-SAM does not work with the internal 6-axis IMU of Ouster lidar. You need to attach a 9-axis IMU to the lidar and perform data-gathering.
       - Configure the driver. Change "timestamp_mode" in your Ouster launch file to "TIME_FROM_PTP_1588" so you can have ROS format timestamp for the point clouds.
-    - Software:
-      - Change "timeField" in "params.yaml" to "t". "t" is the point timestamp in a scan for Ouster lidar.
+    - Config:
+      - Change "sensor" in "params.yaml" to "ouster".
       - Change "N_SCAN" and "Horizon_SCAN" in "params.yaml" according to your lidar, i.e., N_SCAN=128, Horizon_SCAN=1024.
-      - Comment the point definition for Velodyne on top of "imageProjection.cpp".
-      - Uncomment the point definition for Ouster on top of "imageProjection.cpp".
-      - Comment line "timeScanEnd = timeScanCur + laserCloudIn->points.back().time" in "imageProjection.cpp".
-      - Uncomment line "timeScanEnd = timeScanCur + (float)laserCloudIn->points.back().t / 1000000000.0" in "imageProjection.cpp".
-      - Comment line "deskewPoint(&thisPoint, laserCloudIn->points[i].time)" in "imageProjection.cpp".
-      - Uncomment line "deskewPoint(&thisPoint, (float)laserCloudIn->points[i].t / 1000000000.0" in "imageProjection.cpp".
-      - Run "catkin_make" to re-compile the package.
+    - Gen 1 and Gen 2 Ouster:
+      It seems that the point coordinate definition might be different in different generations. Please refer to [Issue #94](https://github.com/TixiaoShan/LIO-SAM/issues/94) for debugging.
 
 <p align='center'>
     <img src="./config/doc/ouster-device.jpg" alt="drawing" width="300"/>
     <img src="./config/doc/ouster-demo.gif" alt="drawing" width="300"/>
 </p>
+
+## Service
+  - /lio_sam/save_map
+    - save map as a PCD file.
+      ``` bash
+        rosservice call [service] [resolution] [destination]
+      ```
+      - Example:
+      ``` bash
+        $ rosservice call /lio_sam/save_map 0.2 "/Downloads/LOAM/"
+      ```
+
+## Issues
+
+  - **Zigzag or jerking behavior**: if your lidar and IMU data formats are consistent with the requirement of LIO-SAM, this problem is likely caused by un-synced timestamp of lidar and IMU data.
+
+  - **Jumpping up and down**: if you start testing your bag file and the base_link starts to jump up and down immediately, it is likely your IMU extrinsics are wrong. For example, the gravity acceleration has negative value.
+
+  - **mapOptimization crash**: it is usually caused by GTSAM. Please install the GTSAM specified in the README.md. More similar issues can be found [here](https://github.com/TixiaoShan/LIO-SAM/issues).
+
+  - **gps odometry unavailable**: it is generally caused due to unavailable transform between message frame_ids and robot frame_id (for example: transform should be available from "imu_frame_id" and "gps_frame_id" to "base_link" frame. Please read the Robot Localization documentation found [here](http://docs.ros.org/en/melodic/api/robot_localization/html/preparing_sensor_data.html).
 
 ## Paper 
 
@@ -187,7 +230,8 @@ Thank you for citing [LIO-SAM (IROS-2020)](./config/doc/paper.pdf) if you use an
 @inproceedings{liosam2020shan,
   title={LIO-SAM: Tightly-coupled Lidar Inertial Odometry via Smoothing and Mapping},
   author={Shan, Tixiao and Englot, Brendan and Meyers, Drew and Wang, Wei and Ratti, Carlo and Rus Daniela},
-  journal={IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)}
+  booktitle={IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)},
+  pages={5135-5142},
   year={2020},
   organization={IEEE}
 }
@@ -207,7 +251,13 @@ Part of the code is adapted from [LeGO-LOAM](https://github.com/RobustFieldAuton
 
 ## TODO
 
-  - [ ] To be added
+  - [ ] [Bug within imuPreintegration](https://github.com/TixiaoShan/LIO-SAM/issues/104)
+
+## Related Package
+
+  - [Lidar-IMU calibration](https://github.com/chennuo0125-HIT/lidar_imu_calib)
+  - [LIO-SAM with ROS2](https://github.com/CAKGOD/lio_sam_ros2)
+  - [LIO-SAM with Scan Context](https://github.com/gisbi-kim/SC-LIO-SAM)
 
 ## Acknowledgement
 

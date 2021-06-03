@@ -17,7 +17,7 @@ export DATASET_LOCATION=/home/$USER/DATASETS/NTU_VIRAL/
 # export DATASET_LOCATION=/media/tmn/myHPSSD/NTU_VIRAL/
 
 export CAPTURE_SCREEN=false;
-export LOG_DATA=false;
+export LOG_DATA=true;
 
 #region 0 UWB NO VIS --------------------------------------------------------------------------------------------------
 

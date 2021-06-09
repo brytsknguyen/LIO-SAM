@@ -38,7 +38,7 @@ cp -R $VIRAL_DIR/config $EXP_OUTPUT_DIR;
 cp -R $VIRAL_DIR/launch $EXP_OUTPUT_DIR;
 roslaunch lio_sam run_airsim.launch log_dir:=$EXP_OUTPUT_DIR \
 autorun:=true \
-bag_file:=$DATASET_LOCATION/$EXP_NAME/$EXP_NAME.bag \
+bag_file:=$BAG_FILE \
 & \
 
 if $CAPTURE_SCREEN

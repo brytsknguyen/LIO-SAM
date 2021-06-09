@@ -31,14 +31,16 @@ if $LOG_DATA
 then
 export BA_LOOP_LOG_DIR=$EXP_OUTPUT_DIR;
 fi
-echo BA LOG DIR: $BA_LOOP_LOG_DIR;
+echo BA LOG DIR: $EXP_LOG_DIR;
+
+export BAG_FILE=$DATASET_LOCATION/$EXP_NAME/$EXP_NAME.bag;
 
 mkdir -p $EXP_OUTPUT_DIR/ ;
 cp -R $ROS_PKG_DIR/config $EXP_OUTPUT_DIR;
 cp -R $ROS_PKG_DIR/launch $EXP_OUTPUT_DIR;
 roslaunch lio_sam run_ntuviral.launch log_dir:=$EXP_OUTPUT_DIR \
 autorun:=true \
-bag_file:=$DATASET_LOCATION/$EXP_NAME/$EXP_NAME.bag \
+bag_file:=$BAG_FILE \
 & \
 
 if $CAPTURE_SCREEN
@@ -64,13 +66,13 @@ timeout $LOG_DUR rostopic echo -p --nostr --noarr /odometry/imu \
 timeout $LOG_DUR rostopic echo -p --nostr --noarr /lio_sam/mapping/odometry \
 > $EXP_OUTPUT_DIR/opt_odom.csv  \
 & \
-timeout $LOG_DUR rostopic echo -p --nostr --noarr /leica/pose/relative \
+timeout $LOG_DUR rostopic echo -b $BAG_FILE -p --nostr --noarr /leica/pose/relative \
 > $EXP_OUTPUT_DIR/leica_pose.csv \
 & \
-timeout $LOG_DUR rostopic echo -p --nostr --noarr /dji_sdk/imu \
+timeout $LOG_DUR rostopic echo -b $BAG_FILE -p --nostr --noarr /dji_sdk/imu \
 > $EXP_OUTPUT_DIR/dji_sdk_imu.csv \
 & \
-timeout $LOG_DUR rostopic echo -p --nostr --noarr /imu/imu \
+timeout $LOG_DUR rostopic echo -b $BAG_FILE -p --nostr --noarr /imu/imu \
 > $EXP_OUTPUT_DIR/vn100_imu.csv \
 & \
 timeout $LOG_DUR rostopic echo -p --nostr --noarr /viral2_odometry/optimization_status \

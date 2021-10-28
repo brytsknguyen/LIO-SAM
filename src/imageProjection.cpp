@@ -295,19 +295,19 @@ public:
 
             // check point time
             if (deskewFlag == 0)
-        {
-            deskewFlag = -1;
-            for (auto &field : currentCloudMsg.fields)
             {
-                if (field.name == "time" || field.name == "t")
+                deskewFlag = -1;
+                for (auto &field : currentCloudMsg.fields)
                 {
-                    deskewFlag = 1;
-                    break;
+                    if (field.name == "time" || field.name == "t")
+                    {
+                        deskewFlag = 1;
+                        break;
+                    }
                 }
+                if (deskewFlag == -1)
+                    ROS_WARN("Point cloud timestamp not available, deskew function disabled, system will drift significantly!");
             }
-            if (deskewFlag == -1)
-                ROS_WARN("Point cloud timestamp not available, deskew function disabled, system will drift significantly!");
-        }
         }
         return true;
     }

@@ -1,0 +1,56 @@
+<launch>
+
+    <arg name="project"       default="viralc"/>
+    <arg name="publish_clock" default="--clock"/>
+    <arg name="autorun"       default="false"/>
+
+    <!-- Oxford's New College dataset -->
+
+    <!-- <arg  name="storage_name" default="mySDSSD"/> -->
+    <arg  name="storage_name" default="mySataSSD"/>
+
+    <!-- SPMS meadow -->
+    <!-- <arg  name="bag_file" default="/media/$(env USER)/$(arg storage_name)/DATASETS/hhrig_spms_meadow/meadow_01/meadow_01.bag"/> -->
+    <!-- <arg  name="bag_file" default="/media/$(env USER)/$(arg storage_name)/DATASETS/hhrig_spms_meadow/meadow_02/meadow_02.bag"/> -->
+    <!-- <arg  name="bag_file" default="/media/$(env USER)/$(arg storage_name)/DATASETS/hhrig_spms_meadow/meadow_03/meadow_03.bag"/> -->
+    <!-- <arg  name="bag_file" default="/media/$(env USER)/$(arg storage_name)/DATASETS/hhrig_spms_meadow/meadow_04/meadow_04.bag"/> -->
+
+    <!-- S1 Corridor -->
+    <arg  name="bag_file" default="/media/$(env USER)/$(arg storage_name)/DATASETS/hhrig_S1_B4_corridor_exp/s1corr_01/s1corr_01.bag"/>
+    <!-- <arg  name="bag_file" default="/media/$(env USER)/$(arg storage_name)/DATASETS/hhrig_S1_B4_corridor_exp/s1corr_02/s1corr_02.bag"/> -->
+
+    <!--- SAM MODULES-->
+    <group if="true">
+
+        <!-- Lidar odometry param -->
+        <rosparam file="$(find lio_sam)/config/hhrig/params_hhrig.yaml" command="load" />
+        
+        <!-- Lidar odometry -->
+        <node pkg="lio_sam"  type="lio_sam_imuPreintegration" name="lio_sam_imuPreintegration" output="screen" respawn="true"/>
+        <node pkg="lio_sam"  type="lio_sam_imageProjection"   name="lio_sam_imageProjection"   output="screen" respawn="true"/>
+        <node pkg="lio_sam"  type="lio_sam_featureExtraction" name="lio_sam_featureExtraction" output="screen" respawn="true"/>
+        <node pkg="lio_sam"  type="lio_sam_mapOptmization"    name="lio_sam_mapOptmization"    output="screen" respawn="true"/>
+
+        <!-- IMU mod -->
+        <node pkg="lvi_sam" type="lvi_sam_imuMod" name="lvi_sam_imuMod" output="screen" respawn="true">
+            <param name="imu_topic" type="string" value="/imu/imu" />
+            <rosparam param="tf_Bold_Bnew"> [0,  1,  0, 0,
+                                             1,  0,  0, 0,
+                                             0,  0, -1, 0,
+                                             0,  0,  0, 1]</rosparam>
+        </node>
+    </group>
+
+    <!-- Image conversion -->
+    <!-- <node pkg="image_transport" type="republish" name="lio_sam_republish" args="compressed in:=/camera/image_raw raw out:=/camera/image_raw" output="screen" respawn="true"/> -->
+
+
+    <!--- Run Rviz-->
+    <node pkg="rviz" type="rviz" name="lio_sam_rviz" args="-d $(find lio_sam)/launch/rviz_hhrig.rviz" />
+
+
+    <!-- Playing the rosbag -->
+    <node required="true" pkg="rosbag" type="play" name="rosbag_play"
+          args="--clock $(arg bag_file)"/>
+
+</launch>

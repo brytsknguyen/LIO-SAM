@@ -1,0 +1,43 @@
+<launch>
+
+    <arg name="project"       default="lio_sam"/>
+    <arg name="publish_clock" default="--clock"/>
+    <arg name="autorun"       default="false"/>
+    <arg name="exp_log_dir"   default="/home/tmn/lio_sam"/>
+    <arg name="loop_en"       default="0"/>
+    
+    <param name="/use_sim_time" value="false" />
+    
+    <!-- LIO SAMPLE -->
+    <arg name="bag_file" default="/media/tmn/mySataSSD1/ATVCollectedNoDepth/daytime_01.bag"/>
+
+    <!-- Run the livox to ouster converter -->
+    <node pkg="merge_lidar" required="true" type="merge_lidar_livox_to_ouster" name="merge_lidar_livox_to_ouster" respawn="false" output="log"/>
+
+    <!-- Create the merge pointcloud -->
+    <node pkg="merge_lidar" type="merge_lidar_node" name="merge_lidar" respawn="true" output="log" required="false">
+        <rosparam file="$(find slict)/config/atv.yaml" command="load"/>
+        <rosparam param="lidar_channels"> [128, 1] </rosparam>
+    </node>
+
+    <!-- Parameters -->
+    <rosparam file="$(find lio_sam)/config/atv.yaml" command="load" />
+    <param name="/lio_sam/savePCDDirectory"       type="string" value="$(arg exp_log_dir)" />
+    <param name="/lio_sam/loopClosureEnableFlag"  type="bool"   value="$(arg loop_en)" />
+    
+    <!--- LOAM -->
+    <include file="$(find lio_sam)/launch/include/module_loam.launch" />
+
+    <!--- Robot State TF -->
+    <!-- <include file="$(find lio_sam)/launch/include/module_robot_state_publisher.launch" /> -->
+
+    <!--- Run Navsat -->
+    <!-- <include file="$(find lio_sam)/launch/include/module_navsat.launch" /> -->
+
+    <node required="true" pkg="rosbag" type="play" name="rosbag_play"
+          args="$(arg publish_clock) $(arg bag_file) -r 0.5"/>
+
+    <!--- Run Rviz-->
+    <node pkg="rviz" type="rviz" name="$(arg project)_rviz" args="-d $(find lio_sam)/launch/atv.rviz" />
+
+</launch>

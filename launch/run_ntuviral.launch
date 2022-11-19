@@ -7,16 +7,10 @@
     <param name="/use_sim_time" value="true" />
     
     <!-- LIO SAMPLE -->
-    <arg name="bag_file" default="/mnt/wwn-0x5002538e00000000-part1/rtp_01/rtp_01.bag"/>
-
-    <!-- Create the merge pointcloud -->
-    <node pkg="merge_lidar" type="merge_lidar_node" name="merge_lidar" respawn="true" output="log" required="false">
-        <rosparam file="$(find slict)/config/ntuviral.yaml" command="load"/>
-        <rosparam param="lidar_channels"> [16, 16] </rosparam>
-    </node>
+    <arg name="bag_file" default="/media/tmn/mySataSSD3/NTU_VIRAL/rtp_01/rtp_01_mod.bag"/>
 
     <!-- Parameters -->
-    <rosparam file="$(find lio_sam)/config/ntuviral.yaml" command="load" />
+    <rosparam file="$(find lio_sam)/config/params_ntuviral_horz.yaml" command="load" />
 
     <!--- LOAM -->
     <include file="$(find lio_sam)/launch/include/module_loam.launch" />

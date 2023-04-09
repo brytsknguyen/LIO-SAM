@@ -375,8 +375,9 @@ public:
       int unused = system((std::string("exec rm -r ") + saveMapDirectory).c_str());
       unused = system((std::string("mkdir -p ") + saveMapDirectory).c_str());
       // save key frame transformations
-      pcl::io::savePCDFileASCII(saveMapDirectory + "/trajectory.pcd", *cloudKeyPoses3D);
-      pcl::io::savePCDFileASCII(saveMapDirectory + "/KfCloudPose.pcd", *cloudKeyPoses6D);
+      pcl::PCDWriter writer;
+      writer.writeASCII(saveMapDirectory + "/KfCloudPose.pcd", *cloudKeyPoses6D, 18);
+      writer.writeASCII(saveMapDirectory + "/trajectory.pcd", *cloudKeyPoses3D, 18);
       // extract global point cloud map
       pcl::PointCloud<PointType>::Ptr globalCornerCloud(new pcl::PointCloud<PointType>());
       pcl::PointCloud<PointType>::Ptr globalCornerCloudDS(new pcl::PointCloud<PointType>());

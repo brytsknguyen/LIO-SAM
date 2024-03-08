@@ -13,19 +13,18 @@
 
     <arg  name="bag_file"  default="$(arg data_path)/ntu_day_01/*.bag"/>
     <!-- <arg  name="bag_file"  default="$(arg data_path)/kth_day_06/*.bag"/> -->
-    <!-- <arg  name="bag_file"  default="$(arg data_path)/kth_night_01/*.bag"/> -->
     <!-- <arg  name="bag_file"  default="$(arg data_path)/tuhh_day_03/*.bag"/> -->
 
     <!-- Chose the config file based on the sequence names -->
-    <arg name="config_file" value="mcdviral_atv_livox.yaml" if="$(eval 'ntu_'  in bag_file)" />
-    <arg name="config_file" value="mcdviral_hhs_livox.yaml" if="$(eval 'kth_'  in bag_file)" />
-    <arg name="config_file" value="mcdviral_hhs_livox.yaml" if="$(eval 'tuhh_' in bag_file)" />
+    <arg name="config_file" value="mcdviral_atv_ouster.yaml" if="$(eval 'ntu_'  in bag_file)" /> <!-- You can change to mcdviral_ouster.yaml or mcdviral_atv_livox.yaml-->
+    <arg name="config_file" value="mcdviral_hhs_ouster.yaml" if="$(eval 'kth_'  in bag_file)" /> <!-- You can change to mcdviral_ouster.yaml or mcdviral_hhs_livox.yaml-->
+    <arg name="config_file" value="mcdviral_hhs_ouster.yaml" if="$(eval 'tuhh_' in bag_file)" /> <!-- You can change to mcdviral_ouster.yaml or mcdviral_hhs_livox.yaml-->
 
     <!-- Directory to log the bundle adjustment poses, pointclouds, and others-->
     <arg name="exp_log_dir" default="/home/$(env USER)/lio_sam_logs/mcdviral"/>
 
     <!-- Run the livox to ouster converter -->
-    <node pkg="slict" type="slict_livox_to_ouster" name="slict_livox_to_ouster" respawn="false" output="log" required="true"></node>  
+    <!-- <node pkg="slict" type="slict_livox_to_ouster" name="slict_livox_to_ouster" respawn="false" output="log" required="true"></node>   -->
 
     <!-- Create the merge pointcloud -->
     <!-- <node pkg="slict" type="slict_merge_lidar" name="slict_merge_lidar" respawn="true" output="screen" required="false">
